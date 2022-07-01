@@ -1,18 +1,28 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+
 defineProps<{
   cardNum?: number | null
   showBack?: boolean
 }>()
+
+const importImgs = import.meta.globEager('../assets/cardFace/*.jpg')
+
+const images = ref<Map<number, string>>(new Map())
+
+onMounted(() => {
+  Object.entries(importImgs).forEach((item) => {
+    const match = item[0].match(/[^/]+(?=.jpg)/)
+    images.value.set(Number(match![0]), item[1].default)
+  })
+})
 </script>
 
 <template>
   <div class="card-container">
     <div class="card" :class="{ showBack: showBack }">
       <div class="front">
-        <img
-          v-if="Number.isInteger(cardNum)"
-          :src="`/resource/cardFace/${cardNum}.jpg`"
-        />
+        <img v-if="Number.isInteger(cardNum)" :src="images.get(cardNum!)" />
       </div>
       <div class="back">
         <img src="/resource/cardBack.jpg" />

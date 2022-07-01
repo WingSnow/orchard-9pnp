@@ -249,6 +249,10 @@ const calcDeckByPlaceCard = (
           // 如果下面的树上已有3点，则变成6点
           point = 6
           diff = 3
+        } else if (deckItem.point === 6) {
+          // 如果下面的树上已有6点，则不变
+          point = 6
+          diff = 0
         } else {
           // 如果下面的树上没有点数，则设置1点
           point = 1
@@ -400,7 +404,6 @@ watch(
   () => store.status,
   (value) => {
     if (value === 2) {
-      console.log('listen 2')
       // 设置可移动卡牌
       initDraggableCard()
       draggableCard.cardNum = store.draggableCardNum
