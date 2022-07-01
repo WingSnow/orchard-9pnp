@@ -5,10 +5,14 @@ import DeckArea from '../components/DeckArea.vue'
 import HandArea from '../components/HandArea.vue'
 import PileArea from '../components/PileArea.vue'
 import ScoreBoard from '../components/ScoreBoard.vue'
+import OCard from '../components/OCard.vue'
 import mainStore from '../stores/main'
+import { message } from '../components/common/popAlter/popAlter'
+import RuleDoc from '../components/RuleDoc.vue'
 
 const store = mainStore()
 
+// 从18张卡牌中随机选择9张作为牌组
 const genCardPile = () => {
   const arr = Array.from(new Array(18).keys())
   return shuffle(arr).slice(0, 9)
@@ -16,10 +20,16 @@ const genCardPile = () => {
 
 store.cardPile = genCardPile()
 
+// 监听状态，当游戏结束时，显示成就
 watch(
   () => store.status,
-  (value) => {
+  async (value) => {
     if (value === 4) {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 1000)
+      })
       let achivement = '弱小树苗'
       const score = store.totalScore
       if (score >= 25) {
@@ -40,7 +50,11 @@ watch(
       if (score >= 50) {
         achivement = '究极完美'
       }
-      alert(`游戏结束。你获得成就 '${achivement}'`)
+      message({
+        content: `游戏结束。你获得成就 '${achivement}'`,
+        duration: 0,
+        type: 'success',
+      })
     }
   }
 )
@@ -52,6 +66,9 @@ watch(
     <hand-area id="hand-area" />
     <pile-area id="pile-area" />
     <score-board />
+
+    <o-card id="transition-card" :card-num="store.dragginCard"></o-card>
+    <rule-doc />
   </div>
 </template>
 
@@ -77,6 +94,14 @@ watch(
     display: inline-block;
     height: 25%;
     width: 25%;
+  }
+
+  #transition-card {
+    position: fixed;
+    height: 18vh;
+    width: 12vh;
+    z-index: 100;
+    visibility: hidden;
   }
 }
 </style>

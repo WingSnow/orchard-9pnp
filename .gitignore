@@ -26,3 +26,6 @@ dist-ssr
 # Linter cache
 .eslintcache
 .stylelintcache
+
+# rollup analysis
+stats.html

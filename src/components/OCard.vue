@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  cardNum: number
+  cardNum?: number | null
   showBack?: boolean
 }>()
 </script>
@@ -9,7 +9,10 @@ defineProps<{
   <div class="card-container">
     <div class="card" :class="{ showBack: showBack }">
       <div class="front">
-        <img :src="`/resource/cardFace/${cardNum}.jpg`" />
+        <img
+          v-if="Number.isInteger(cardNum)"
+          :src="`/resource/cardFace/${cardNum}.jpg`"
+        />
       </div>
       <div class="back">
         <img src="/resource/cardBack.jpg" />
@@ -22,21 +25,22 @@ defineProps<{
 .card-container {
   height: 150px;
   width: 100px;
+  border-radius: 10%;
+  transform-style: preserve-3d;
 }
 
 .card {
   height: 100%;
   width: 100%;
   position: relative;
+  transform-style: preserve-3d;
 
   .front,
   .back {
     height: 100%;
     width: 100%;
-    backface-visibility: hidden;
     position: absolute;
-    border: 1px solid black;
-    transition: all 1s ease-in-out;
+    border: 1px solid rgb(0 0 0);
     border-radius: 10%;
     overflow: hidden;
 
@@ -48,11 +52,13 @@ defineProps<{
 
   .front {
     background-color: white;
-    transform: rotateY(0deg);
+
+    backface-visibility: hidden;
   }
 
   .back {
-    transform: rotateY(-180deg);
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
   }
 
   &.showBack {
