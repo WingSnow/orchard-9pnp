@@ -15,7 +15,10 @@ const store = mainStore()
 // 从18张卡牌中随机选择9张作为牌组
 const genCardPile = () => {
   const arr = Array.from(new Array(18).keys())
-  return shuffle(arr).slice(0, 9)
+  const shuffledArr = shuffle(arr).slice(0, 9)
+  return shuffledArr.map((item) => {
+    return
+  })
 }
 
 store.cardPile = genCardPile()

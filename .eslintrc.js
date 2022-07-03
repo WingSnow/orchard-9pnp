@@ -7,10 +7,7 @@ module.exports = {
     // 识别 ES 的代码，使用 ECMAScript 2021 自动设置 ecmaVersion parser 为 12，
     es2021: true,
   },
-  extends: [
-    'airbnb-base', // airbnb 的规则
-    'plugin:prettier/recommended', // Prettier 的规则
-  ],
+  extends: ['eslint:recommended', 'plugin:prettier/recommended'],
 
   overrides: [
     // 针对 .ts 文件，覆盖通用配置
@@ -21,10 +18,11 @@ module.exports = {
       parserOptions: {
         project: ['./tsconfig.json'], // 告诉 eslint：tsconfig 在哪
       },
-      plugins: ['@typescript-eslint'],
       extends: [
-        'airbnb-typescript/base', // airbnb 的 typescript 规则
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
         'plugin:prettier/recommended',
+        'plugin:@typescript-eslint/strict',
       ],
     },
     // 针对 .vue 文件，覆盖通用配置
@@ -37,10 +35,15 @@ module.exports = {
         extraFileExtensions: ['.vue'],
       },
       extends: [
-        'airbnb-typescript/base',
         'plugin:vue/vue3-recommended', // 使用 vue3 的推荐规则
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
         'plugin:prettier/recommended',
+        'plugin:@typescript-eslint/strict',
       ],
+      rules: {
+        'no-undef': 'off',
+      },
     },
   ],
 

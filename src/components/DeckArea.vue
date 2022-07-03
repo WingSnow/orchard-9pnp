@@ -458,6 +458,16 @@ watch(
 )
 
 onMounted(async () => {
+  const gsd: GStatue = '5'
+  const s: String = '123'
+
+  var a: string[]
+
+  var b: Array<string>
+
+  const c = '1'
+
+  alert(gsd)
   // 设置DOM元素
   const draggableEle = document.getElementById('draggable-card')
   const deckEle = document.getElementById('deck')
@@ -542,7 +552,7 @@ onMounted(async () => {
         id="draggable-card"
         class="card"
         :card-num="draggableCard.cardNum"
-      ></o-card>
+      />
       <div v-for="(item, index) in placedCards" :key="index">
         <o-card
           class="card"
@@ -552,7 +562,7 @@ onMounted(async () => {
             top: item.top,
             transform: `rotateZ(${item.direction * 90}deg)`,
           }"
-        ></o-card>
+        />
       </div>
     </div>
   </div>

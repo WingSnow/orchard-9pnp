@@ -7,67 +7,37 @@ import drawCardAnimate from '../animates/drawCard'
 
 const store = mainStore()
 
-/** 被选中的卡牌的序号 */
-const picked = ref<number | null>(null)
+/** 手牌，值为CardIndex  */
+const handCardLeft = computed(() => {
+  return store.handCardLeft?.index
+})
+const handCardRight = computed(() => {
+  return store.handCardRight?.index
+})
 
-/** 手牌的数组，值为牌面序号  */
-// const handCardNumber = ref<number[]>([])
-const handCardLeft = ref<number | null>()
-const handCardRight = ref<number | null>()
-
-/** 抽牌直到有两张手牌或牌组为空,抽牌后进入选牌阶段 */
-const drawCard = async (immediately = false) => {
-  while (isNil(handCardLeft.value) || isNil(handCardRight.value)) {
-    const card = store.draw()
-    if (card === null) {
-      break
-    }
-    let hand: 0 | 1 = 0
-    if (!handCardLeft.value) {
-      hand = 0
-    } else if (!handCardRight.value) {
-      hand = 1
-    }
-    if (!immediately) {
-      // eslint-disable-next-line no-await-in-loop
-      await drawCardAnimate(hand)
-    }
-    if (hand === 0) {
-      handCardLeft.value = card
-    } else {
-      handCardRight.value = card
-    }
+/** 被选中的卡牌的序号（左边-0；右边-1） */
+const pickedCardSeq = computed(() => {
+  if (!store.pickedCard) {
+    return null
   }
-  store.switchStatus(1, 'drawCardFinish')
-}
-
-/**
- * 选一张牌，进入放牌阶段
- * @param pickCardId 选择的牌的序号
- */
-const pickCard = (pickCardId: number) => {
-  if (store.status !== 1) {
-    return
+  if (store.pickedCard.index === store.handCardLeft?.index) {
+    return 0
   }
-  picked.value = pickCardId
-  const pickedValue =
-    pickCardId === 0 ? handCardLeft.value : handCardRight.value
-  if (!isNil(pickedValue)) {
-    store.cardDraggable = true
-    store.draggableCardNum = pickedValue
-    store.switchStatus(2, 'pickCard')
+  if (store.pickedCard.index === store.handCardRight?.index) {
+    return 1
   }
-}
+  return null
+})
 
 /**
  * 计算要高亮的牌，即放牌阶段被选中的手牌
  * @return 要高亮的牌的序号
  */
 const highlightCardId = computed(() => {
-  if (!store.cardDraggable || isNil(picked.value)) {
+  if (store.status !== 'play' || isNil(pickedCardSeq.value)) {
     return null
   }
-  return picked.value
+  return pickedCardSeq.value
 })
 
 /**
@@ -75,11 +45,19 @@ const highlightCardId = computed(() => {
  * @return 要弱化显示的牌的序号
  */
 const unhighlightCardId = computed(() => {
-  if (!store.cardDraggable || isNil(picked.value)) {
+  if (store.status !== 'play' || isNil(pickedCardSeq.value)) {
     return null
   }
-  return Math.abs(1 - picked.value)
+  return Math.abs(1 - pickedCardSeq.value)
 })
+
+/**
+ * 选一张牌，进入放牌阶段
+ * @param hand 选择的牌在左边还是右边
+ */
+const pickCard = (hand: Hand) => {
+  store.pick(hand)
+}
 
 // 监听状态
 // 进入抽牌阶段（0）时，抽牌
