@@ -7,7 +7,13 @@ import externalGlobals from 'rollup-plugin-external-globals'
 export default defineConfig({
   base: '/orchard-9pnp/',
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => tag.startsWith('ion-')
+        }
+      }
+    }),
     visualizer(),
   ],
   build: {

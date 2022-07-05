@@ -5,41 +5,42 @@ import mainStore from '../stores/main'
 const store = mainStore()
 
 const diffScore = computed(() => {
-  if (!store.diffScore) {
+  if (!store.transitionalScore) {
     return ''
   }
   let flag = ''
-  if (store.diffScore > 0) {
+  if (store.transitionalScore > 0) {
     flag = '+'
   }
-  return `${flag}${store.diffScore}`
+  return `${flag}${store.transitionalScore}`
 })
 </script>
 
 <template>
-  <div class="board" title="当前总分">
-    {{ store.totalScore }}
-  </div>
-  <transition>
-    <div v-show="diffScore && store.status === 2" id="diffScore">
-      {{ diffScore }}
+  <div>
+    <div class="board" title="当前总分">
+      {{ store.totalScore }}
     </div>
-  </transition>
+    <transition>
+      <div v-show="diffScore && store.status === 'play'" id="diffScore">
+        {{ diffScore }}
+      </div>
+    </transition>
+  </div>
 </template>
 
 <style lang="scss" scoped>
+$size: 4rem;
+
 .board {
   background-color: orange;
   border-radius: 50%;
-  position: fixed;
-  font-size: 1.5em;
+  font-size: larger;
   font-weight: bold;
-  right: 1rem;
-  top: 1rem;
   text-align: center;
-  line-height: 5vw;
-  width: 5vw;
-  height: 5vw;
+  line-height: $size;
+  width: $size;
+  height: $size;
 }
 
 #diffScore {
@@ -47,12 +48,10 @@ const diffScore = computed(() => {
   text-align: center;
   text-shadow: -1px 1px 0 #fff, 1px 1px 0 #fff, 1px -1px 0 #fff,
     -1px -1px 0 #fff;
-  top: calc(1.5rem + 5vw);
-  right: calc(1rem + (5vw - 3vw) / 2);
-  font-size: 1.2em;
-  line-height: 3vw;
-  width: 3vw;
-  height: 3vw;
+  top: calc(1.5rem + $size);
+  right: calc(1rem + $size / 4);
+  width: calc($size / 2);
+  height: calc($size / 2);
 }
 
 .v-leave-active {

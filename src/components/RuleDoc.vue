@@ -1,23 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const display = ref(false)
+const emits = defineEmits<(e: 'close') => void>()
+
+const onClose = () => {
+  emits('close')
+}
 </script>
 
 <template>
-  <div
-    id="rule-doc"
-    :style="{
-      'pointer-events': display ? 'all' : 'none',
-    }"
-  >
-    <button type="button" @click="display = !display">
-      {{ display ? 'x' : '?' }}
-    </button>
-    <div v-show="display">
-      <img src="/resource/rulebook.jpg" />
-      <div class="mask" />
-    </div>
+  <div id="rule-doc">
+    <button type="button" @click="onClose">x</button>
+    <img src="/resource/rulebook.jpg" />
+    <div class="mask" />
   </div>
 </template>
 
@@ -46,7 +41,6 @@ const display = ref(false)
   }
 
   button {
-    pointer-events: all;
     position: fixed;
     top: 1rem;
     left: 1rem;

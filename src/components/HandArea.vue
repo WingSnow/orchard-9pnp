@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { isNil } from 'lodash'
 import OCard from './OCard.vue'
 import mainStore from '../stores/main'
-import drawCardAnimate from '../animates/drawCard'
 
 const store = mainStore()
 
 /** 手牌，值为CardIndex  */
 const handCardLeft = computed(() => {
-  return store.handCardLeft?.index
+  return store.handCardLeft?.data.index
 })
 const handCardRight = computed(() => {
-  return store.handCardRight?.index
+  return store.handCardRight?.data.index
 })
 
 /** 被选中的卡牌的序号（左边-0；右边-1） */
@@ -20,10 +19,10 @@ const pickedCardSeq = computed(() => {
   if (!store.pickedCard) {
     return null
   }
-  if (store.pickedCard.index === store.handCardLeft?.index) {
+  if (store.pickedCard.id === store.handCardLeft?.id) {
     return 0
   }
-  if (store.pickedCard.index === store.handCardRight?.index) {
+  if (store.pickedCard.id === store.handCardRight?.id) {
     return 1
   }
   return null
@@ -52,41 +51,12 @@ const unhighlightCardId = computed(() => {
 })
 
 /**
- * 选一张牌，进入放牌阶段
+ * 选一张牌
  * @param hand 选择的牌在左边还是右边
  */
 const pickCard = (hand: Hand) => {
   store.pick(hand)
 }
-
-// 监听状态
-// 进入抽牌阶段（0）时，抽牌
-// 进入出牌阶段（3）时，出牌（从手牌数组中移除该牌），然后如果牌组和手牌均为空，则游戏结束
-watch(
-  () => store.status,
-  async (value) => {
-    if (value === 3) {
-      const cardToPlay = picked.value === 0 ? handCardLeft : handCardRight
-      cardToPlay.value = null
-      if (
-        isNil(handCardLeft.value) &&
-        isNil(handCardRight.value) &&
-        store.cardPile.length === 0
-      ) {
-        store.switchStatus(4, 'gameFinish')
-        return
-      }
-      store.switchStatus(0, 'placeCard Finish')
-    } else if (value === 0) {
-      await drawCard()
-    }
-  }
-)
-
-onMounted(() => {
-  // 游戏开始时，抽取初始手牌
-  drawCard(true)
-})
 </script>
 
 <template>
@@ -98,10 +68,10 @@ onMounted(() => {
         :class="{
           highlight: highlightCardId === 0,
           unhighlight: unhighlightCardId === 0,
-          pickable: store.status === 1,
+          pickable: store.status === 'pick',
         }"
-        :card-num="handCardLeft"
-        @click="pickCard(0)"
+        :card-index="handCardLeft"
+        @click="pickCard('left')"
       ></o-card>
       <o-card
         v-show="!isNil(handCardRight)"
@@ -109,10 +79,10 @@ onMounted(() => {
         :class="{
           highlight: highlightCardId === 1,
           unhighlight: unhighlightCardId === 1,
-          pickable: store.status === 1,
+          pickable: store.status === 'pick',
         }"
-        :card-num="handCardRight"
-        @click="pickCard(1)"
+        :card-index="handCardRight"
+        @click="pickCard('right')"
       ></o-card>
 
       <o-card

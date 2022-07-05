@@ -14,7 +14,7 @@ interface CardConfigData {
   clusters: ClusterType[]
 }
 
-const transCardConfigToCard = (config: CardConfigData): Card => {
+const transCardConfigToCard = (config: CardConfigData): CardData => {
   const trees = config.clusters.map((cluster): TreeType => {
     switch (cluster) {
       case 0:
@@ -31,7 +31,7 @@ const transCardConfigToCard = (config: CardConfigData): Card => {
   }
 }
 
-const cardConfigs: Card[] = []
+const cardConfigs: CardData[] = []
 
 cardConfigData.forEach(({ id, clusters }) => {
   cardConfigs.push(

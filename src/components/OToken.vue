@@ -3,8 +3,7 @@ import _ from 'lodash'
 import { computed } from 'vue'
 import DiceBox from './common/DiceBox.vue'
 
-/** 标记物类型——0: 红（苹果）；1：蓝（梅子）；2：黄（梨）；3：黑（坏果） */
-type TokenType = 0 | 1 | 2 | 3
+type TokenType = UnitType
 
 interface Props {
   type: TokenType
@@ -18,20 +17,20 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const diceColor = computed(() => {
-  if (props.type === 0) {
+  if (props.type === 'apple') {
     return 'rgb(236 68 31)'
   }
-  if (props.type === 1) {
+  if (props.type === 'plum') {
     return 'rgb(64 40 138)'
   }
-  if (props.type === 2) {
+  if (props.type === 'pear') {
     return 'rgb(232 204 35)'
   }
   return 'rgb(0 0 0)'
 })
 
 const itemColor = computed(() => {
-  if (props.type === 2) {
+  if (props.type === 'pear') {
     return 'rgb(0 0 0)'
   }
   return 'rgb(255 255 255)'

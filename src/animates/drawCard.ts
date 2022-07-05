@@ -31,10 +31,10 @@ const getSlotPosition = () => {
   return position
 }
 
-const drawCard = async (handIndex: 0 | 1) => {
+const drawCard = async (hand: Hand) => {
   const position = getSlotPosition()
   const from = position.pile
-  const to = handIndex === 0 ? position.hand1 : position.hand2
+  const to = hand === 'left' ? position.hand1 : position.hand2
   const timeline = gsap.timeline()
   await timeline
     .fromTo(

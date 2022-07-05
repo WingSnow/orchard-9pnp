@@ -1,66 +1,44 @@
 <script setup lang="ts">
-import { watch } from 'vue'
-import { shuffle } from 'lodash'
+import { computed, onMounted, ref } from 'vue'
 import DeckArea from '../components/DeckArea.vue'
 import HandArea from '../components/HandArea.vue'
 import PileArea from '../components/PileArea.vue'
 import ScoreBoard from '../components/ScoreBoard.vue'
 import OCard from '../components/OCard.vue'
-import mainStore from '../stores/main'
-import { message } from '../components/common/popAlter/popAlter'
 import RuleDoc from '../components/RuleDoc.vue'
+import DropdownButtonMenu from '../components/common/DropdownButtonMenu.vue'
+import mainStore from '../stores/main'
 
 const store = mainStore()
 
-// 从18张卡牌中随机选择9张作为牌组
-const genCardPile = () => {
-  const arr = Array.from(new Array(18).keys())
-  const shuffledArr = shuffle(arr).slice(0, 9)
-  return shuffledArr.map((item) => {
-    return
-  })
+const ruleDocDisplay = ref(false)
+
+const onRuleDocClose = () => {
+  ruleDocDisplay.value = false
 }
 
-store.cardPile = genCardPile()
+const menu = [
+  {
+    text: '游戏规则',
+    icon: 'help-outline',
+    color: '#ffa940',
+    onClick: () => {
+      ruleDocDisplay.value = true
+    },
+  },
+  {
+    text: '重新开始',
+    icon: 'reload-outline',
+    color: '#d4380d',
+    onClick: () => {
+      store.startGame()
+    },
+  },
+]
 
-// 监听状态，当游戏结束时，显示成就
-watch(
-  () => store.status,
-  async (value) => {
-    if (value === 4) {
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve()
-        }, 1000)
-      })
-      let achivement = '弱小树苗'
-      const score = store.totalScore
-      if (score >= 25) {
-        achivement = '遗忘之树'
-      }
-      if (score >= 30) {
-        achivement = '满意之树'
-      }
-      if (score >= 35) {
-        achivement = '卓越之树'
-      }
-      if (score >= 40) {
-        achivement = '枝繁叶茂'
-      }
-      if (score >= 45) {
-        achivement = '难以置信'
-      }
-      if (score >= 50) {
-        achivement = '究极完美'
-      }
-      message({
-        content: `游戏结束。你获得成就 '${achivement}'`,
-        duration: 0,
-        type: 'success',
-      })
-    }
-  }
-)
+onMounted(() => {
+  store.startGame()
+})
 </script>
 
 <template>
@@ -68,10 +46,14 @@ watch(
     <deck-area id="deck-area" />
     <hand-area id="hand-area" />
     <pile-area id="pile-area" />
-    <score-board />
+    <score-board id="score-borad" />
 
-    <o-card id="transition-card" :card-num="store.dragginCard"></o-card>
-    <rule-doc />
+    <o-card
+      id="transition-card"
+      :card-index="store.drawingCard?.data.index"
+    ></o-card>
+    <rule-doc v-show="ruleDocDisplay" @close="onRuleDocClose" />
+    <dropdown-button-menu id="extra-button" :text="'hover me!'" :menu="menu" />
   </div>
 </template>
 
@@ -106,5 +88,18 @@ watch(
     z-index: 100;
     visibility: hidden;
   }
+
+  #score-borad {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+#extra-button {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 500;
 }
 </style>

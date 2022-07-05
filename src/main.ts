@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import Vue, { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import popAlter from './components/common/popAlter/popAlter'
 import App from './App.vue'
