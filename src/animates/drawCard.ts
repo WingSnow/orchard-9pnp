@@ -1,5 +1,6 @@
 import gsap from 'gsap'
 
+/** 获取卡槽的位置（相对于GameDesktopView，因为过渡牌在View里），因为窗口大小改变后卡槽的位置会变，所以需要每次播放抽卡动画时实时获取 */
 const getSlotPosition = () => {
   const position = {
     pile: { x: 0, y: 0, width: 0, height: 0 },
@@ -15,6 +16,7 @@ const getSlotPosition = () => {
   let { x, y, width, height } = pile.getBoundingClientRect()
   position.pile = { x, y, width, height }
   ;({ x, y, width, height } = hand1.getBoundingClientRect())
+  // 因为手牌都是旋转了90°的，所以计算位置（左边缘和上边缘距离屏幕左侧和顶部的距离）时要进行转换
   position.hand1 = {
     x: x + (width - height) / 2,
     y: y - (width - height) / 2,
@@ -31,6 +33,7 @@ const getSlotPosition = () => {
   return position
 }
 
+/**抽卡动画，将过渡牌从牌堆移动到手牌的指定位置 */
 const drawCard = async (hand: Hand) => {
   const position = getSlotPosition()
   const from = position.pile

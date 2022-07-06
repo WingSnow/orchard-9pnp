@@ -14,3 +14,5 @@ declare interface CardData {
 }
 
 declare type Hand = 'left' | 'right'
+
+declare type Direction = 'top' | 'right' | 'down' | 'left'

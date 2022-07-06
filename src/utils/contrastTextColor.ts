@@ -1,6 +1,6 @@
 /**
  * 根据背景色自适应文本颜色
- * @param backgroundHexColor 背景色
+ * @param backgroundHexColor 16进制表示的背景色，支持#000，000，#000000，000000四种格式
  * @return 文本颜色（黑色或白色)
  */
 const contrastTextColor = (backgroundHexColor: string) => {

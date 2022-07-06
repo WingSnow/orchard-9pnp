@@ -5,7 +5,7 @@ interface Props {
   content: string
   duration: number
   type: 'info' | 'warning' | 'error' | 'success'
-  remove: () => {}
+  remove: () => void
 }
 
 const props = defineProps<Props>()
@@ -46,8 +46,8 @@ onMounted(() => {
   padding: 0;
   color: #000000d9;
   position: fixed;
-  font-size: 14px;
-  top: 8px;
+  font-size: 1rem;
+  top: 0.5rem;
   left: 0;
   z-index: 1010;
   width: 100%;
@@ -56,8 +56,8 @@ onMounted(() => {
   .pop-alter {
     border: 1px solid black;
     display: inline-block;
-    padding: 8px 15px;
-    margin: 4px auto;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem auto;
     box-shadow: 1px 1px 2px rgba(0 0 0 / 20%);
     background-color: white;
 
@@ -93,6 +93,6 @@ onMounted(() => {
 .fade-up-enter-from,
 .fade-up-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-0.75rem);
 }
 </style>

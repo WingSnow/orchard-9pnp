@@ -1,6 +1,11 @@
 import cardsConfigs from '../config/configLoader'
 import { shuffle } from 'lodash'
 
+/**
+ * 根据卡面序号生成卡牌对象
+ * @param cardIndex 卡面序号，范围为[0 - 17]
+ * @returns 卡牌对象
+ */
 const cardConstructor = (cardIndex: number) => {
   const card = cardsConfigs.find((item) => item.index === cardIndex)
   if (!card) {
@@ -9,7 +14,7 @@ const cardConstructor = (cardIndex: number) => {
   return new Card(card)
 }
 
-// 从18张卡牌中随机选择9张作为牌组
+/** 从18张卡牌中随机选择9张作为牌组  */
 export const genCardPile = () => {
   const arr = Array.from(new Array(18).keys())
   const shuffledArr = shuffle(arr).slice(0, 9)
@@ -17,8 +22,6 @@ export const genCardPile = () => {
     return cardConstructor(item)
   })
 }
-
-export type Direction = 'top' | 'right' | 'down' | 'left'
 
 const _transfromDirectionToNumber = (direction: Direction) => {
   switch (direction) {

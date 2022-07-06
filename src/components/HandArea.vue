@@ -71,7 +71,7 @@ const pickCard = (hand: Hand) => {
           pickable: store.status === 'pick',
         }"
         :card-index="handCardLeft"
-        @click="pickCard('left')"
+        @click.stop="pickCard('left')"
       ></o-card>
       <o-card
         v-show="!isNil(handCardRight)"
@@ -82,7 +82,7 @@ const pickCard = (hand: Hand) => {
           pickable: store.status === 'pick',
         }"
         :card-index="handCardRight"
-        @click="pickCard('right')"
+        @click.stop="pickCard('right')"
       ></o-card>
 
       <o-card

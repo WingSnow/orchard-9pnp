@@ -24,6 +24,9 @@ module.exports = {
         'plugin:prettier/recommended',
         'plugin:@typescript-eslint/strict',
       ],
+      rules: {
+        '@typescript-eslint/no-non-null-assertion': 'off',
+      },
     },
     // 针对 .vue 文件，覆盖通用配置
     {
@@ -43,11 +46,9 @@ module.exports = {
       ],
       rules: {
         'no-undef': 'off',
+        'no-param-reassign': ['error', { props: false }],
+        '@typescript-eslint/no-non-null-assertion': 'off',
       },
     },
   ],
-
-  rules: {
-    'no-param-reassign': ['error', { props: false }],
-  },
 }

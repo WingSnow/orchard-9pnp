@@ -4,17 +4,19 @@ import OCard from './OCard.vue'
 import OToken from './OToken.vue'
 import mainStore from '../stores/main'
 import { type Unit, type CalcResultUnit, deckSize } from '../stores/deck'
-import { type Direction } from '../stores/card'
 
 const store = mainStore()
 
-/** 牌桌的一个单位长度等于多少px */
+/** 牌桌的一个单元格大小等于多少px */
 let deckUnit = 0
 
+/** token的大小 */
 const tokenSize = ref(0)
 
+/** id='deck'的DOM元素，牌桌 */
 let deckElement: HTMLElement
 
+/** id='draagable-card'的DOM元素，可移动卡牌 */
 let draggableCardElement: HTMLElement
 
 /** 放置在牌桌上的牌 */
@@ -41,11 +43,18 @@ interface DraggableCard {
   display: boolean
 }
 
+// 不能直接用store.pickedCard来计算（computed）draggableCard，会导致卡牌跟随鼠标移动时闪烁
+// 推测是因为vue计算属性的刷新机制导致丢帧
 const draggableCard = reactive<DraggableCard>({
   cardIndex: 0,
   direction: 'top',
   position: 0,
   display: false,
+})
+
+/** 是否显示可移动卡牌 */
+const draggableCardDisplay = computed(() => {
+  return draggableCard.display && store.status === 'play'
 })
 
 /** 初始化可移动卡牌 */
@@ -57,20 +66,20 @@ const initDraggableCard = () => {
   store.transitionalScore = 0
   draggableCard.cardIndex = pickedCard.data.index
   draggableCard.direction = pickedCard.direction
-  draggableCardElement.style.transform = transformDirectionToDeg(
-    draggableCard.direction
-  )
 
   // 初始化显示
+  draggableCardElement.style.transform = transDirectionToDeg(
+    draggableCard.direction
+  )
   draggableCardElement.style.left = '0'
   draggableCardElement.style.top = '0'
   draggableCard.display = true
 }
 
 /**
- * 将卡牌相对于牌桌的偏移量转换为卡牌的位置(Card.position)
+ * 将卡牌相对于牌桌（DOM元素）的偏移量转换为卡牌在牌桌（对象）的位置
  * @param offset 卡牌相对于牌桌的偏移量（单位px）
- * @param direction 卡牌的方向(Card.direction)
+ * @param direction 卡牌的方向
  * @return 卡牌的位置
  */
 const offsetToPosition = (
@@ -90,9 +99,9 @@ const offsetToPosition = (
 }
 
 /**
- * 将卡牌的位置(Card.position)转换为卡牌相对于牌桌的偏移量
+ * 将卡牌在牌桌（对象）的位置转换为卡牌相对于牌桌（DOM元素）的偏移量
  * @param position 卡牌的位置
- * @param direction 卡牌的方向(Card.direction)
+ * @param direction 卡牌的方向
  * @return 卡牌相对于牌桌的偏移量（单位px）
  */
 const positionToOffset = (position: number, direction: Direction) => {
@@ -127,17 +136,24 @@ const tokens = computed(() => {
   return arr
 })
 
-/** 结果移动后设置，隐藏可移动卡牌并关闭监听事件 */
+/** 结束出牌时隐藏可移动卡牌并关闭监听事件 */
 const EndDrag = () => {
   hoverTokens.value.length = 0
   deckElement.onmousemove = null
-  draggableCardElement.onmousedown = null
+  deckElement.onwheel = null
+  draggableCardElement.onclick = null
+  document.body.onclick = null
   document.onkeydown = null
   draggableCard.display = false
 }
 
+/** 出牌阶段，可移动卡牌与牌桌上的牌重叠时，显示预估放置后会改变哪些token */
 const hoverTokens = ref<Token[]>([])
 
+/**
+ * 根据"逻辑的预估结果"设置"显示的预估token"
+ * @param calcResults 预估放置结果
+ */
 const setHoverTokens = (calcResults: CalcResultUnit[]) => {
   hoverTokens.value.length = 0
   let totalDiffScore = 0
@@ -155,7 +171,8 @@ const setHoverTokens = (calcResults: CalcResultUnit[]) => {
   store.transitionalScore = totalDiffScore
 }
 
-const transformDirectionToDeg = (direction?: Direction) => {
+/** 将卡牌的方向属性转换成旋转样式属性 */
+const transDirectionToDeg = (direction?: Direction) => {
   switch (direction) {
     case 'top':
       return 'rotateZ(0deg)'
@@ -170,14 +187,17 @@ const transformDirectionToDeg = (direction?: Direction) => {
   }
 }
 
+// 监听游戏阶段变化
+// 因为这里要监听的只是state的其中一项，而不是整个state，所以不能用pinia的state订阅机制
 watch(
   () => store.status,
   (newValue: GameStatus) => {
+    // 进入出牌阶段时执行，主要是挂载事件监听器，以实现可移动卡牌跟随鼠标移动
     if (newValue === 'play') {
       // 设置可移动卡牌
       initDraggableCard()
-      // 挂载监听器
       // 可移动卡牌跟随鼠标移动
+      /** 卡牌悬停计时器，只有卡牌悬停一段时间（200ms）后，才显示预估结果，节约性能 */
       let hoverTimer: number | undefined
       deckElement.onmousemove = (e) => {
         if (!hoverTimer) {
@@ -205,6 +225,23 @@ watch(
           }
         }, 200)
       }
+      // 点击牌桌以外的其他位置回到选牌阶段
+      document.body.onclick = () => {
+        store.unpick()
+        EndDrag()
+      }
+      // 使用鼠标滚动旋转卡牌
+      deckElement.onwheel = () => {
+        draggableCard.direction = store.pickedCard!.rotate()
+        hoverTimer = setTimeout(() => {
+          const pickedCard = store.pickedCard
+          if (pickedCard) {
+            pickedCard.position = draggableCard.position
+            const calcResult = store.deck.calcDeckByPlaceCard(pickedCard)
+            setHoverTokens(calcResult)
+          }
+        }, 200)
+      }
       // 按空格旋转卡牌，按Esc回到选牌阶段
       document.onkeydown = (e) => {
         if (e.code === 'Space') {
@@ -223,21 +260,23 @@ watch(
           EndDrag()
         }
       }
-      // 点击鼠标左键放置卡牌，如果放置成功，则进入出牌阶段
-      draggableCardElement.onmousedown = (e) => {
+      // 点击鼠标左键放置卡牌，如果放置成功，则结束出牌
+      draggableCardElement.onclick = (e) => {
         if (e.button === 0) {
           store.pickedCard!.position = draggableCard.position
           if (store.placeCard()) {
             EndDrag()
           }
         }
+        // 阻止事件冒泡
+        e.stopPropagation()
       }
     }
   }
 )
 
 onMounted(() => {
-  // 设置DOM元素
+  // DOM元素变量赋值
   const draggableEle = document.getElementById('draggable-card')
   const deckEle = document.getElementById('deck')
   if (!draggableEle) {
@@ -249,13 +288,13 @@ onMounted(() => {
   draggableCardElement = draggableEle
   deckElement = deckEle
 
-  deckUnit = deckElement.clientWidth / 100
-  tokenSize.value = deckUnit / 6
+  deckUnit = deckElement.clientWidth / deckSize
+  tokenSize.value = deckUnit / 6 // 在这个组件中，6是个magic code，要结合骰子组件来看（骰子组件的组件大小=6倍的prop.size）
   // 移动牌桌到中心位置
-  deckElement.style.top = `${-deckElement.clientWidth / 2 - 30}px`
-  deckElement.style.left = `${-deckElement.clientHeight / 2}px`
+  deckElement.style.top = `calc(${-deckElement.clientWidth / 2}px + 30vh)`
+  deckElement.style.left = `calc(${-deckElement.clientHeight / 2}px + 40vw)`
+  // 按住右键移动牌桌
   deckElement.onmousedown = (e) => {
-    // 按住右键移动牌桌
     if (e.button === 2) {
       const curMousemoveHandler = deckElement.onmousemove
       deckElement.style.cursor = 'move'
@@ -314,12 +353,12 @@ onMounted(() => {
         </template>
       </div>
       <o-card
-        v-show="draggableCard.display"
+        v-show="draggableCardDisplay"
         id="draggable-card"
         class="card"
         :card-index="draggableCard?.cardIndex"
         :style="{
-          transform: transformDirectionToDeg(draggableCard?.direction),
+          transform: transDirectionToDeg(draggableCard?.direction),
         }"
       />
       <div v-for="(item, index) in placedCards" :key="index">
@@ -329,7 +368,7 @@ onMounted(() => {
           :style="{
             left: item.left,
             top: item.top,
-            transform: transformDirectionToDeg(item.direction),
+            transform: transDirectionToDeg(item.direction),
           }"
         />
       </div>
